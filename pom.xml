@@ -7,13 +7,13 @@
 		<version>1.5.4.RELEASE</version>
 	</parent>
 	<groupId>com.skspruce.ism</groupId>
-	<artifactId>fm</artifactId>
+	<artifactId>detect</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<scm>
-		<url>http://gitlab.skspruce.net/ISM/FM.git</url>
+		<url>http://gitlab.skspruce.net/ISM/Detect.git</url>
 	</scm>
-	<name>fm</name>
+	<name>detect</name>
 	<prerequisites>
 		<maven>3.2.1</maven>
 	</prerequisites>
@@ -46,12 +46,6 @@
 		</dependencies>
 	</dependencyManagement>
 	<modules>
-		<module>fm-collector</module>
-		<module>fm-backend</module>
-		<module>fm-frontend</module>
-		<module>fm-admin</module>
-		<module>fm-forwarder</module>
-		<module>fm-api</module>
-    <module>fm-reporter</module>
+		<module>detect-webapi</module>
   </modules>
 </project>
