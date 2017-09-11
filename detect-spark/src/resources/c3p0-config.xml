@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 需要导入c3p0驱动jar包和mysql驱动jar包 -->
+<!-- c3p0-config.xml配置文件放在src包下 -->
+<c3p0-config>
+    <named-config name="mysqlIas">
+        <property name="user">root</property>
+        <property name="password">123456.coM</property>
+        <property name="jdbcUrl">jdbc:mysql://192.168.20.157:3306/ias</property>
+        <property name="driverClass">com.mysql.jdbc.Driver</property>
+
+        <property name="initialPoolSize">5</property>
+        <property name="maxPoolSize">25</property>
+        <property name="minPoolSize">5</property>
+    </named-config>
+    <named-config name="mysqlDetect">
+        <property name="user">root</property>
+        <property name="password">123.com</property>
+        <property name="jdbcUrl">jdbc:mysql://192.168.20.114:3306/probe</property>
+        <property name="driverClass">com.mysql.jdbc.Driver</property>
+
+        <property name="initialPoolSize">5</property>
+        <property name="maxPoolSize">25</property>
+        <property name="minPoolSize">5</property>
+    </named-config>
+</c3p0-config>
