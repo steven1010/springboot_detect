@@ -26,9 +26,10 @@ public class AuditDetectEsRepository extends ElasticSearchRepository {
 
     public SearchResponse findIdByUserMac(String userMac, String startTime, String endTime) {
 
+        String[] likeText = new String[] {userMac};
         SearchRequestBuilder queryBuilder = prepareSearch();
-        queryBuilder.setQuery(QueryBuilders.matchQuery("UserMacString", userMac))
-        .setQuery(QueryBuilders.rangeQuery("Time").gt(startTime).lt(endTime)).setFrom(0).setSize(10000);
+//        queryBuilder.setQuery(QueryBuilders.boolQuery().should(QueryBuilders.matchQuery("UserMacString", "*"+userMac+"*")).filter(QueryBuilders.rangeQuery("Time").gt(startTime).lt(endTime))).setFrom(0).setSize(10000);
+        queryBuilder.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("UserMacString",userMac)).filter(QueryBuilders.rangeQuery("Time").gt(startTime).lt(endTime))).setFrom(0).setSize(10000);
         SearchResponse searchResponse = queryBuilder.get();
 
         return  searchResponse;

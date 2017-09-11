@@ -1,4 +1,4 @@
-package com.skspruce.ism.detect.webapi.repository.impl;
+package com.skspruce.ism.detect.webapi.repository.primary.impl;
 
 import com.skspruce.ism.detect.webapi.repository.primary.AuditDetectDao;
 import org.springframework.stereotype.Component;

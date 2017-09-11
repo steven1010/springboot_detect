@@ -4,7 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
-@EnableMongoRepositories(basePackages = "com.neo.model.repository.primary",
+@EnableMongoRepositories(basePackages = "com.skspruce.ism.detect.webapi.repository.primary",
         mongoTemplateRef = PrimaryMongoConfig.MONGO_TEMPLATE)
 public class PrimaryMongoConfig {
 

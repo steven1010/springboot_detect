@@ -15,18 +15,18 @@ import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 public class MultipleMongoConfig {
 
     @Autowired
-    private MultipleMongoProperties mongoProperties;
+    private MultipleMongoProperties multipleMongoProperties;
 
     @Primary
     @Bean(name = PrimaryMongoConfig.MONGO_TEMPLATE)
     public MongoTemplate primaryMongoTemplate() throws Exception {
-        return new MongoTemplate(primaryFactory(this.mongoProperties.getPrimary()));
+        return new MongoTemplate(primaryFactory(this.multipleMongoProperties.getPrimary()));
     }
 
     @Bean
     @Qualifier(SecondaryMongoConfig.MONGO_TEMPLATE)
     public MongoTemplate secondaryMongoTemplate() throws Exception {
-        return new MongoTemplate(secondaryFactory(this.mongoProperties.getSecondary()));
+        return new MongoTemplate(secondaryFactory(this.multipleMongoProperties.getSecondary()));
     }
 
     @Bean

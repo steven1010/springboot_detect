@@ -1,4 +1,4 @@
-package com.skspruce.ism.fm.backend.util;
+package com.skspruce.ism.detect.webapi.util;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
@@ -300,6 +300,7 @@ public class TimeUtils
     public static final String YYYY_MM_DD_FORMAT = "yyyy-MM-dd";
     public static final long DEFAULT_DATE = -5364691200000L;
     public static final String DEFAULTFORMAT = "yyyy-MM-dd HH:mm:ss";
+
     
     public static String long2TimezoneStr(long time, String timeZoneStr, String farmat) {
     	SimpleDateFormat dateFormat = new SimpleDateFormat(farmat);  

@@ -1,7 +1,6 @@
-package com.skspruce.ism.detect.webapi.repository;
+package com.skspruce.ism.detect.webapi.repository.primary;
 
 import com.skspruce.ism.detect.webapi.entity.AuditDetect;
-import com.skspruce.ism.detect.webapi.repository.primary.AuditDetectDao;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Component;
