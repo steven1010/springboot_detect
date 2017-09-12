@@ -1,4 +1,4 @@
-package com.skspruce.detect;
+package com.skspruce.ism.detect.spark;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

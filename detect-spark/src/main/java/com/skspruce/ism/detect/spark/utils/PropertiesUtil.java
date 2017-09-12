@@ -1,4 +1,4 @@
-package com.skspruce.detect.utils;
+package com.skspruce.ism.detect.spark.utils;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

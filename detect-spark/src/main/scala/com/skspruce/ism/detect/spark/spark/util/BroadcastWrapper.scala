@@ -1,7 +1,7 @@
-package com.skspruce.detect.spark.util
+package com.skspruce.ism.detect.spark.spark.util
 
-import com.skspruce.detect.model.Strategy
-import com.skspruce.detect.utils.SQLHelper
+import com.skspruce.ism.detect.spark.model.Strategy
+import com.skspruce.ism.detect.spark.utils.SQLHelper
 import org.apache.spark.SparkContext
 import org.apache.spark.broadcast.Broadcast
 

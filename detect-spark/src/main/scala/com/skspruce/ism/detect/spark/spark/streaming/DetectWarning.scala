@@ -1,10 +1,10 @@
-package com.skspruce.detect.spark.streaming
+package com.skspruce.ism.detect.spark.spark.streaming
 
 import java.lang
 import java.util.Calendar
 
-import com.skspruce.detect.spark.util.BroadcastWrapper
-import com.skspruce.detect.utils._
+import com.skspruce.ism.detect.spark.spark.util.BroadcastWrapper
+import com.skspruce.ism.detect.spark.utils._
 import org.apache.commons.cli.{CommandLine, GnuParser, HelpFormatter, Option, Options}
 import org.apache.kafka.common.serialization.{ByteArrayDeserializer, StringDeserializer}
 import org.apache.log4j.{Level, Logger}

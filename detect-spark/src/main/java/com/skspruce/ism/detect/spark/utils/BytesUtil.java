@@ -1,4 +1,4 @@
-package com.skspruce.detect.utils;
+package com.skspruce.ism.detect.spark.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

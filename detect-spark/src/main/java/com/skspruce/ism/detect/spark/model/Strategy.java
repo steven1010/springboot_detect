@@ -1,4 +1,4 @@
-package com.skspruce.detect.model;
+package com.skspruce.ism.detect.spark.model;
 
 import java.io.Serializable;
 

@@ -1,13 +1,11 @@
-package com.skspruce.detect.utils;
+package com.skspruce.ism.detect.spark.utils;
 
 import com.datastax.driver.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 /**
  * cassandra操作工具类

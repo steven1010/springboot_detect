@@ -1,4 +1,4 @@
-package com.skspruce.detect.utils;
+package com.skspruce.ism.detect.spark.utils;
 
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
@@ -22,8 +22,6 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.reindex.BulkByScrollResponse;
-import org.elasticsearch.index.reindex.DeleteByQueryAction;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.slf4j.Logger;
@@ -239,25 +237,6 @@ public class ESUtil {
         }
 
         return flag;
-    }
-
-    /**
-     * 根据条件删除
-     *
-     * @param qb
-     * @param indices
-     * @return 影响结果数
-     */
-    public static Long deleteByQuery(QueryBuilder qb, String... indices) {
-        long deletedCount = 0;
-        try {
-            BulkByScrollResponse response = DeleteByQueryAction.INSTANCE
-                    .newRequestBuilder(client).filter(qb).source(indices).get();
-            deletedCount = response.getDeleted();
-        } catch (Exception e) {
-            logger.error("deleteByQuery error:", e);
-        }
-        return deletedCount;
     }
 
     /**
