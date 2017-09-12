@@ -14,8 +14,8 @@
     </named-config>
     <named-config name="mysqlDetect">
         <property name="user">root</property>
-        <property name="password">123.com</property>
-        <property name="jdbcUrl">jdbc:mysql://192.168.20.114:3306/probe</property>
+        <property name="password">123456.coM</property>
+        <property name="jdbcUrl">jdbc:mysql://192.168.20.157:3306/detect</property>
         <property name="driverClass">com.mysql.jdbc.Driver</property>
 
         <property name="initialPoolSize">5</property>

@@ -21,19 +21,19 @@ public class CassandraUtil {
 
     static {
         PoolingOptions poolingOptions = new PoolingOptions();
-        //设置每个连接最大请求数
+        //设置每个连接最大请求数 32
         poolingOptions.setMaxRequestsPerConnection(HostDistance.LOCAL, 32);
-        //设置与集群中机器最少两个连接
+        //设置与集群中机器最少两个连接 2
         poolingOptions.setCoreConnectionsPerHost(HostDistance.LOCAL, 2);
-        //设置与集群中机器最多四个连接
+        //设置与集群中机器最多四个连接 4
         poolingOptions.setMaxConnectionsPerHost(HostDistance.LOCAL, 4);
         //配置hosts
-        String[] hosts = PropertiesUtil.getInstance().getString(PropertiesUtil.CASSANDRA_URL, DEFAULT_HOSTS).split(",");
+        String[] hosts = PropertiesUtil.getInstance().getString(PropertiesUtil.CASSANDRA_HOSTS, DEFAULT_HOSTS).split(",");
         Cluster.Builder builder = Cluster.builder();
         for (String host : hosts) {
             builder.addContactPoints(host);
         }
-        cluster = builder.withPoolingOptions(poolingOptions).build();
+        cluster = builder.withPort(PropertiesUtil.getInstance().getInteger(PropertiesUtil.CASSANDRA_PORT, 9042)).withPoolingOptions(poolingOptions).build();
     }
 
     /**
@@ -96,16 +96,38 @@ public class CassandraUtil {
      * @return true or false
      */
     public static boolean isKSExists(String keySpace) {
-        Set<String> kys = new HashSet<>();
+        boolean flag = false;
         try {
-            List<KeyspaceMetadata> keyspaces = cluster.getMetadata().getKeyspaces();
-            for (KeyspaceMetadata km : keyspaces) {
-                kys.add(km.getName());
+            KeyspaceMetadata ks = cluster.getMetadata().getKeyspace(keySpace);
+            if (ks != null) {
+                flag = true;
             }
         } catch (Exception e) {
-            logger.error("get cluster metadata error,KeySpace is:" + keySpace, e);
+            logger.error("isKSExists:" + keySpace, e);
         }
-        return kys.contains(keySpace);
+        return flag;
+    }
+
+    /**
+     * 判断键空间是否存在
+     *
+     * @param keySpace
+     * @return true or false
+     */
+    public static boolean isTableExists(String keySpace, String tableName) {
+        boolean flag = false;
+        try {
+            KeyspaceMetadata ks = cluster.getMetadata().getKeyspace(keySpace);
+            if (ks != null) {
+                TableMetadata table = ks.getTable(tableName);
+                if (table != null) {
+                    flag = true;
+                }
+            }
+        } catch (Exception e) {
+            logger.error("isTableExists:" + keySpace + "." + tableName, e);
+        }
+        return flag;
     }
 
     /**
@@ -121,6 +143,22 @@ public class CassandraUtil {
             getSession().execute(cql);
         } catch (Exception e) {
             logger.error("dropKeySpace error,CQL is:" + cql, e);
+        }
+        return flag;
+    }
+
+    /**
+     * 执行CQL
+     *
+     * @param cql
+     * @return
+     */
+    public static boolean executeCql(String cql) {
+        boolean flag = true;
+        try {
+            flag = getSession().execute(cql).wasApplied();
+        } catch (Exception e) {
+            logger.error("executeCql error,CQL is:" + cql, e);
         }
         return flag;
     }

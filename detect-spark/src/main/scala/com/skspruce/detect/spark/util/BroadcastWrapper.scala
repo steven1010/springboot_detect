@@ -23,9 +23,9 @@ object BroadcastWrapper {
     val conn = SQLHelper.getInstance().getIasConnection
     //此处设置为手动,否则影响kafka offsets commit....奇葩.....
     conn.setAutoCommit(false)
-    val apAreaSql = "select ap.mac mac ,tap.area_id id,area.name name from tb_ap ap" +
-      "left join tb_area_ap tap on ap.id=tap.ap_id" +
-      "left join tb_area area on tap.area_id=area.id" +
+    val apAreaSql = "select ap.mac mac ,tap.area_id id,area.name name from tb_ap ap " +
+      "left join tb_area_ap tap on ap.id=tap.ap_id " +
+      "left join tb_area area on tap.area_id=area.id " +
       "where tap.area_id is not null"
 
     val result = conn.prepareStatement(apAreaSql).executeQuery()
@@ -43,11 +43,11 @@ object BroadcastWrapper {
   }
 
   private def getStrategy():scala.collection.mutable.Map[String,Strategy]={
-    val conn = SQLHelper.getInstance().getProbeConnection
+    val conn = SQLHelper.getInstance().getDetectConnection
     //此处设置为手动,否则会影响kafka offsets commit....奇葩.....
     conn.setAutoCommit(false)
     val strategySql = "select id,name,mac,account_type,account_id,area_ids," +
-      "report_type,report_target,report_level from monitor_strategy"
+      "report_type,report_target,report_level from strategy"
     val result = conn.prepareStatement(strategySql).executeQuery()
 
     val map = scala.collection.mutable.Map[String, Strategy]()

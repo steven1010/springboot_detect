@@ -18,10 +18,12 @@ public class PropertiesUtil {
     public static String FILE_NAME = "detect.properties";
     public static String ES_CLUSTER_NAME = "es.cluster.name";
     public static String ES_CLUSTER_HOSTS = "es.cluster.hosts";
-    public static String ES_CLUSTER_CLIENT_INIT = "es.cluster.client.init";
     public static String ES_CLUSTER_INDEX = "es.cluster.index";
     public static String ES_CLUSTER_TYPE = "es.cluster.type";
-    public static String CASSANDRA_URL = "cassandra.hosts";
+    public static String CASSANDRA_HOSTS = "cassandra.hosts";
+    public static String CASSANDRA_PORT = "cassandra.port";
+    public static String CASSANDRA_KEYSPACE = "cassandra.keyspace";
+    public static String CASSANDRA_TABLE = "cassandra.table";
     public static String KAFKA_BOOTSTRAP_SERVERS = "kafka.bootstrap_servers";
 
     public static void main(String[] args) {

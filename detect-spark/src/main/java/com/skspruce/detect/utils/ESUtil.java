@@ -3,6 +3,8 @@ package com.skspruce.detect.utils;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.indices.IndicesExistsResponse;
+import org.elasticsearch.action.admin.indices.exists.types.TypesExistsRequest;
+import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -47,6 +49,8 @@ public class ESUtil {
 
 
     static {
+        //不明觉厉......
+        System.setProperty("es.set.netty.runtime.available.processors", "false");
         Settings settings = Settings.builder()
                 .put("cluster.name", PropertiesUtil.getInstance().getString(PropertiesUtil.ES_CLUSTER_NAME, "elasticsearch")).build();
         try {
@@ -110,6 +114,26 @@ public class ESUtil {
     }
 
     /**
+     * 判断index是否存在
+     *
+     * @param index
+     * @param type
+     * @return true or false
+     */
+    public static boolean isTypeExists(String index, String type) {
+        boolean flag = true;
+        try {
+            TypesExistsRequest request = new TypesExistsRequest(new String[]{index}, type);
+            TypesExistsResponse response = client.admin().indices().typesExists(request).actionGet();
+            flag = response.isExists();
+        } catch (Exception e) {
+            flag = false;
+            logger.error("is type exists error:", e);
+        }
+        return flag;
+    }
+
+    /**
      * 创建mapping
      *
      * @param index
@@ -129,6 +153,12 @@ public class ESUtil {
         return flag;
     }
 
+    /**
+     * 仅用于获取创建strategy_event的mapping
+     *
+     * @return
+     * @throws IOException
+     */
     public static XContentBuilder getMapping() throws IOException {
         XContentBuilder builder = jsonBuilder()
                 .startObject()
@@ -137,6 +167,7 @@ public class ESUtil {
                 .startObject("begin_time").field("type", "long").field("store", "yes").field("index", "not_analyzed").endObject()
                 .startObject("area_id").field("type", "integer").field("store", "yes").field("index", "not_analyzed").endObject()
                 .startObject("strategy_id").field("type", "integer").field("store", "yes").field("index", "not_analyzed").endObject()
+                .startObject("status").field("type", "integer").field("store", "yes").field("index", "not_analyzed").endObject()
                 .startObject("area_name").field("type", "string").field("store", "yes").endObject()
                 .endObject()
                 .endObject();
@@ -152,30 +183,6 @@ public class ESUtil {
      * @return true or false
      */
     public static boolean addIndex(String index, String type, XContentBuilder obj) {
-        boolean flag = true;
-        try {
-            IndexResponse response = client.prepareIndex(index, type).setSource(obj).get();
-            int status = response.status().getStatus();
-            if (status != 200) {
-                flag = false;
-            }
-        } catch (Exception e) {
-            flag = false;
-            logger.error("add index error:", e);
-        }
-
-        return flag;
-    }
-
-    /**
-     * 以{@code Map}方式添加索引
-     *
-     * @param index
-     * @param type
-     * @param obj
-     * @return true or false
-     */
-    public static boolean addIndex(String index, String type, Map<String, Object> obj) {
         boolean flag = true;
         try {
             IndexResponse response = client.prepareIndex(index, type).setSource(obj).get();

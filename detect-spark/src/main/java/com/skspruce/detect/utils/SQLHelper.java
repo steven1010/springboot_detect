@@ -35,7 +35,7 @@ public class SQLHelper {
         return mysqlIasDS.getConnection();
     }
 
-    public Connection getProbeConnection() throws SQLException{
+    public Connection getDetectConnection() throws SQLException{
         return mysqlMonitorDS.getConnection();
     }
 }
