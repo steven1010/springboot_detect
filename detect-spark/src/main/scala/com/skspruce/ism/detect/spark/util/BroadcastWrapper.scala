@@ -1,4 +1,4 @@
-package com.skspruce.ism.detect.spark.spark.util
+package com.skspruce.ism.detect.spark.util
 
 import com.skspruce.ism.detect.spark.model.Strategy
 import com.skspruce.ism.detect.spark.utils.SQLHelper
