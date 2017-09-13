@@ -64,7 +64,7 @@ public class Test {
         Producer producer = KafkaUtil.getProducer();
 
         Cluster cluster = Cluster.builder().addContactPoints("192.168.20.155").build();
-        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 100;").all();
+        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 1000;").all();
 
         //List<Row> data = CassandraUtil.queryToList("select day,time,ap_mac,content from ias.rtls_by_time limit 100;");
 

@@ -99,13 +99,13 @@ object DetectWarning {
     conf.set("spark.streaming.kafka.maxRatePerPartition", maxRatePerPartition)
     //以本地模式运行,仅测试用,本地测试在VM参数中加入-DisLocal=true
     val isLocal = System.getProperty("isLocal")
-    if (isLocal.equals("true")) {
+    if (isLocal != null && isLocal.equals("true")) {
       conf.setMaster("local[4]")
     }
     //StreamingContext,里面包含SparkContext
     val ssc = new StreamingContext(conf, Seconds(interval.toInt))
 
-    if (!isLocal.equals("true")) {
+    if (isLocal != null && !isLocal.equals("true")) {
       //设置checkpoint目录
       ssc.checkpoint(checkpointPath)
     }
