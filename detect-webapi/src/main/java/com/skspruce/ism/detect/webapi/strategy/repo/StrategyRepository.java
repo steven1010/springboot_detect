@@ -1,12 +1,9 @@
 package com.skspruce.ism.detect.webapi.strategy.repo;
 
 import com.skspruce.ism.detect.webapi.strategy.entity.Strategy;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.transaction.annotation.Transactional;
 
 public interface StrategyRepository extends JpaRepository<Strategy, Integer> {
