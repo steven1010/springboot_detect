@@ -7,8 +7,11 @@ public class StrategyEvent {
     private Integer areaId;
     private String areaName;
     private Integer strategyId;
-
+    private String strategyName;
     private Integer status;
+
+    private Long endTime;
+    private Long handleTime;
 
     public StrategyEvent() {
     }
@@ -77,5 +80,29 @@ public class StrategyEvent {
 
     public void setStatus(Integer status) {
         this.status = status;
+    }
+
+    public Long getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(Long endTime) {
+        this.endTime = endTime;
+    }
+
+    public Long getHandleTime() {
+        return handleTime;
+    }
+
+    public void setHandleTime(Long handleTime) {
+        this.handleTime = handleTime;
+    }
+
+    public String getStrategyName() {
+        return strategyName;
+    }
+
+    public void setStrategyName(String strategyName) {
+        this.strategyName = strategyName;
     }
 }
