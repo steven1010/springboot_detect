@@ -1,0 +1,9 @@
+mongodb:
+  primary:
+    host: 192.168.20.111
+    port: 27017
+    database: ias_detect
+  secondary:
+    host: 192.168.20.111
+    port: 27017
+    database: ias_virtual_identity
