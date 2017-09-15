@@ -18,7 +18,6 @@
     <prerequisites>
         <maven>3.2.1</maven>
     </prerequisites>
-
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
@@ -36,7 +35,6 @@
         <log4j-core.version>2.8.2</log4j-core.version>
         <log4j-api.version>2.8.2</log4j-api.version>
     </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -55,7 +53,6 @@
                 <artifactId>hamcrest-core</artifactId>
                 <version>1.3</version>
             </dependency>
-
             <dependency>
                 <groupId>org.elasticsearch</groupId>
                 <artifactId>elasticsearch</artifactId>
@@ -118,7 +115,6 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <modules>
         <module>detect-webapi</module>
         <module>detect-spark</module>
