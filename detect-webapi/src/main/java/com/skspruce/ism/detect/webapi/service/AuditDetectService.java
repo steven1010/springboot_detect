@@ -1,17 +1,28 @@
 package com.skspruce.ism.detect.webapi.service;
 
+import com.skspruce.ism.detect.webapi.RestConstants;
+import com.skspruce.ism.detect.webapi.entity.AuditDetect;
 import com.skspruce.ism.detect.webapi.repository.AuditDetectEsRepository;
 import com.skspruce.ism.detect.webapi.repository.primary.AuditDetectRepository;
+import com.skspruce.ism.detect.webapi.util.RestUtil;
+import com.skspruce.ism.detect.webapi.vo.Message;
+import com.skspruce.ism.detect.webapi.vo.ResponseMessage;
+import net.sf.json.JSONObject;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHits;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
 public class AuditDetectService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuditDetectService.class);
 
     @Autowired
     private AuditDetectEsRepository auditDetectEsRepository;
@@ -19,16 +30,36 @@ public class AuditDetectService {
     @Autowired
     private AuditDetectRepository auditDetectRepository;
 
-    public void findAuditDetect(String usermac) {
-        SearchResponse searchResponse = auditDetectEsRepository.findIdByUserMac("D8:EB:97:26:2F:49", "2017-08-29T04:02:46+08:00", "2017-08-29T04:12:47+08:00");
+    public String findAuditDetect(String userMac, String beginTime, String endTime) {
 
-        SearchHits hits = searchResponse.getHits();
+        JSONObject modelMap = new JSONObject();
+        ResponseMessage responseMessage = RestUtil.addResponseMessageForModelMap(modelMap);
 
-        Set<String> ids = new HashSet<String>();
-        for(int i = 0; i< hits.getHits().length; i++) {
-            ids.add(hits.getAt(i).getId());
+        try{
+            SearchResponse searchResponse = auditDetectEsRepository.findIdByUserMac(userMac, beginTime, endTime);
+
+            SearchHits hits = searchResponse.getHits();
+
+            Set<String> ids = new HashSet<String>();
+            for(int i = 0; i< hits.getHits().length; i++) {
+                ids.add(hits.getAt(i).getId());
+            }
+            if(ids.size() > 0) {
+               List<AuditDetect> auditDetects = auditDetectRepository.findByIdIn(ids);
+
+                modelMap.put("data", auditDetects);
+            }
+        }catch (Exception e) {
+            logger.error("", e);
+            responseMessage
+                    .setStatus(RestConstants.ReturnResponseMessageFailed);
+            responseMessage.setMessage(new Message("查询轨迹失败!", "search track failed"));
+            modelMap.put(RestConstants.ReturnResponseMessage, responseMessage);
+            return modelMap.toString();
         }
-        System.out.println(ids.size());
-        System.out.println(auditDetectRepository.findByIdIn(ids).size());
+
+
+
+        return "";
     }
 }
