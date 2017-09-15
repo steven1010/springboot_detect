@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.datastax.driver.core.Row;
 import com.skspruce.ism.detect.webapi.strategy.entity.Strategy;
 import com.skspruce.ism.detect.webapi.strategy.entity.StrategyEvent;
-import com.skspruce.ism.detect.webapi.strategy.repo.StrategyJpaRepository;
+import com.skspruce.ism.detect.webapi.strategy.repository.StrategyJpaRepository;
 import com.skspruce.ism.detect.webapi.strategy.util.*;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
 
@@ -76,15 +75,15 @@ public class StrategyEventController {
      * @param status    处理状态匹配
      * @return {@code ESPage<StrategyEvent>}
      */
-    @RequestMapping(value = "/get_page")
+    @RequestMapping(value = "/get_page", method = RequestMethod.GET)
     public ESPage<StrategyEvent> getPage(@RequestParam(value = "number", defaultValue = "0") Integer number,
                                          @RequestParam(value = "size", defaultValue = "5") Integer size,
                                          @RequestParam(value = "sortField", defaultValue = "begin_time") String sortField,
                                          @RequestParam(value = "sortType", defaultValue = "desc") String sortType,
-                                         @RequestParam(value = "areaName", defaultValue = "") String areaName,
-                                         @RequestParam(value = "areaId", defaultValue = "") String areaId,
-                                         @RequestParam(value = "userMac", defaultValue = "") String userMac,
-                                         @RequestParam(value = "status", defaultValue = "") String status) {
+                                         @RequestParam(value = "areaName", defaultValue = "", required = false) String areaName,
+                                         @RequestParam(value = "areaId", defaultValue = "", required = false) String areaId,
+                                         @RequestParam(value = "userMac", defaultValue = "", required = false) String userMac,
+                                         @RequestParam(value = "status", defaultValue = "", required = false) String status) {
 
         //ES query
         SearchRequestBuilder srb = ESUtil.getClient().prepareSearch(esIndex);
@@ -174,7 +173,7 @@ public class StrategyEventController {
      *
      * @return {@code Map<String, Long>}
      */
-    @RequestMapping(value = "/get_warning")
+    @RequestMapping(value = "/get_warning", method = RequestMethod.GET)
     public Map<String, Long> getWarningCount() {
         //ES query
         SearchRequestBuilder srb = ESUtil.getClient().prepareSearch(esIndex);
@@ -229,7 +228,7 @@ public class StrategyEventController {
      * @return {@code ModelAndView}
      */
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public ModelAndView delete(@RequestBody List<StrategyEvent> content) {
+    public List<StrategyEvent> delete(@RequestBody List<StrategyEvent> content) {
         List<String> esIds = new ArrayList<>(content.size());
         List<String> cqls = new ArrayList<>(content.size());
 
@@ -243,14 +242,14 @@ public class StrategyEventController {
 
         ESUtil.deleteBatch(esIndex, esType, esIds);
         CassandraUtil.batchCqls(cqls);
-        //ES处理为懒操作,防止数据未更新,睡眠2秒
+        //ES处理为懒操作,防止数据未更新,睡眠1秒
         try {
-            Thread.sleep(1000 * 2);
+            Thread.sleep(1000 * 1);
         } catch (InterruptedException e) {
             logger.info("interrupted error:", e);
         }
 
-        return new ModelAndView("/strategy_event/get_page");
+        return content;
     }
 
 }

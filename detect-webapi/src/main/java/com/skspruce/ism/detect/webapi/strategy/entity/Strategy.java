@@ -28,14 +28,14 @@ public class Strategy {
 
     private Integer reportLevel;
 
-    private Timestamp addTime;
+    private Long addTime;
 
     public Strategy() {
     }
 
     public Strategy(Integer id, String name, String mac, Integer accountType,
                     String accountId, String areaIds, Integer reportType,
-                    String reportTarget, Integer reportLevel, Timestamp addTime) {
+                    String reportTarget, Integer reportLevel, Long addTime) {
         super();
         this.id = id;
         this.name = name;
@@ -121,11 +121,11 @@ public class Strategy {
         this.reportLevel = reportLevel;
     }
 
-    public Timestamp getAddTime() {
+    public Long getAddTime() {
         return addTime;
     }
 
-    public void setAddTime(Timestamp addTime) {
+    public void setAddTime(Long addTime) {
         this.addTime = addTime;
     }
 }

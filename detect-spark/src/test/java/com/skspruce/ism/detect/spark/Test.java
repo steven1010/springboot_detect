@@ -67,8 +67,8 @@ public class Test {
         //List<Row> data = CassandraUtil.queryToList("select day,time,ap_mac,content from ias.rtls_by_time limit 100;");
         Random random = new Random();
 
-        int index = 0;
-        do {
+        //int index = 0;
+        //do {
             for (Row next : data) {
                 Thread.sleep(1 * 1);
                 System.out.println(next.getInt("day") + "\t" + next.getTimestamp("time").getTime() + "\t" + next.getLong("ap_mac"));
@@ -90,14 +90,14 @@ public class Test {
                 }
                 System.out.println("user_mac:" + BytesUtil.toHex(targetByte));
 
-                /*int index = random.nextInt(1000);
+                int index = random.nextInt(1000);
                 if (index < 400) {
                     try (Connection conn = SQLHelper.getInstance().getDetectConnection()) {
-                        conn.prepareStatement("insert into strategy (name,mac) values ('test_"
+                        conn.prepareStatement("insert into strategy (name,mac,add_time) values ('test_"
                                 + random.nextInt(10000) + "','"
-                                + MacUtil.formatMac(BytesUtil.toHex(targetByte)) + "')").execute();
+                                + MacUtil.formatMac(BytesUtil.toHex(targetByte)) + "',"+System.currentTimeMillis()+")").execute();
                     }
-                }*/
+                }
 
                 byte[] kafkaByte = new byte[content.capacity()];
                 content.flip();
@@ -109,7 +109,7 @@ public class Test {
                                     "_" + System.currentTimeMillis(), kafkaByte));
                 }
             }
-            index++;
-        } while (index < 100);
+            //index++;
+        //} while (index < 100);
     }
 }

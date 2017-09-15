@@ -1,4 +1,4 @@
-package com.skspruce.ism.detect.webapi.strategy.repo;
+package com.skspruce.ism.detect.webapi.strategy.repository;
 
 import com.skspruce.ism.detect.webapi.strategy.entity.Strategy;
 import org.springframework.data.jpa.repository.JpaRepository;

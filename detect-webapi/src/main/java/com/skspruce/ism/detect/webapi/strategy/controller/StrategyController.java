@@ -1,8 +1,7 @@
 package com.skspruce.ism.detect.webapi.strategy.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.skspruce.ism.detect.webapi.strategy.entity.Strategy;
-import com.skspruce.ism.detect.webapi.strategy.repo.StrategyJpaRepository;
+import com.skspruce.ism.detect.webapi.strategy.repository.StrategyJpaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,7 +53,7 @@ public class StrategyController {
      * @param sortType  排序类型
      * @return {@code Page<Strategy>}
      */
-    @RequestMapping("/get_page")
+    @RequestMapping(value = "/get_page", method = RequestMethod.GET)
     public Page<Strategy> findPage(@RequestParam(value = "number", defaultValue = "0") Integer number,
                                    @RequestParam(value = "size", defaultValue = "5") Integer size,
                                    @RequestParam(value = "sortField", defaultValue = "id") String sortField,
@@ -78,7 +77,7 @@ public class StrategyController {
      * @return {@link ModelAndView}
      */
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public ModelAndView delete(@RequestBody List<Strategy> content) {
+    public List<Strategy> delete(@RequestBody List<Strategy> content) {
         /*JSONObject json = JSONObject.parseObject(ids);
         String[] allId = json.getString("ids").split(",");
         logger.info("ids=" + json.getString("ids"));
@@ -91,7 +90,7 @@ public class StrategyController {
         //sjr.delete(content);
         sjr.deleteInBatch(content);
 
-        return new ModelAndView("/strategy/get_page");
+        return content;
     }
 
     /**
@@ -101,7 +100,10 @@ public class StrategyController {
      * @return 当前操作对象 {@link Strategy}
      */
     @RequestMapping(value = "/upsert", method = RequestMethod.POST)
-    public Strategy update(@RequestBody Strategy strategy) {
+    public Strategy upsert(@RequestBody Strategy strategy) {
+        if (strategy.getId() == null || strategy.getId() == 0) {
+            strategy.setAddTime(System.currentTimeMillis());
+        }
         Strategy save = sjr.save(strategy);
         return save;
     }
