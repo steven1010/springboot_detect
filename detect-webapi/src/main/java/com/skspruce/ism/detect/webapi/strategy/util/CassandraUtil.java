@@ -232,7 +232,7 @@ public class CassandraUtil {
      * @param cqls {@code List<String>}
      * @return true or false
      */
-    public static boolean batchInsertOrUpdate(List<String> cqls) {
+    public static boolean batchCqls(List<String> cqls) {
         boolean flag = true;
         BatchStatement batch = new BatchStatement();
         try {
@@ -241,7 +241,7 @@ public class CassandraUtil {
             }
             getSession().execute(batch);
         } catch (Exception e) {
-            logger.error("batchInsertOrUpdate data to cassandra error,CQL like:" + cqls.get(0), e);
+            logger.error("batchCqls data to cassandra error,CQL like:" + cqls.get(0), e);
             flag = false;
         }
         return flag;

@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import java.util.List;
+
 /**
  * 策略相关API controller
  */
@@ -30,15 +32,30 @@ public class StrategyController {
         SpringApplication.run(StrategyController.class, args);
     }
 
-    @RequestMapping(value = "/find", method = RequestMethod.POST)
+    /**
+     * 根据ID查询
+     *
+     * @param strategy 封装JSON数据对象
+     * @return {@link Strategy}
+     */
+    @RequestMapping(value = "/find_id", method = RequestMethod.POST)
     public Strategy findById(@RequestBody Strategy strategy) {
         logger.info("id=" + strategy.getId());
-        Strategy res = sjr.findStrategyById(strategy.getId());
+        Strategy res = sjr.findOne(strategy.getId());
         return res;
     }
 
-    @RequestMapping("/get")
-    public Page<Strategy> findPage(@RequestParam(value = "page", defaultValue = "0") Integer page,
+    /**
+     * 分页查询策略
+     *
+     * @param number    当前页码
+     * @param size      每页显示数量
+     * @param sortField 排序字段
+     * @param sortType  排序类型
+     * @return {@code Page<Strategy>}
+     */
+    @RequestMapping("/get_page")
+    public Page<Strategy> findPage(@RequestParam(value = "number", defaultValue = "0") Integer number,
                                    @RequestParam(value = "size", defaultValue = "5") Integer size,
                                    @RequestParam(value = "sortField", defaultValue = "id") String sortField,
                                    @RequestParam(value = "sortType", defaultValue = "desc") String sortType) {
@@ -49,27 +66,41 @@ public class StrategyController {
             sort = new Sort(Sort.Direction.ASC, sortField);
         }
 
-        Pageable pageable = new PageRequest(page, size, sort);
+        Pageable pageable = new PageRequest(number, size, sort);
         Page<Strategy> strategies = sjr.findAll(pageable);
         return strategies;
     }
 
+    /**
+     * 删除策略,可批量删除,多个id以','分割
+     *
+     * @param content POST JSON {"ids":"1,2,3"}
+     * @return {@link ModelAndView}
+     */
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    public ModelAndView deleteByIds(@RequestBody String ids) {
-        JSONObject json = JSONObject.parseObject(ids);
+    public ModelAndView delete(@RequestBody List<Strategy> content) {
+        /*JSONObject json = JSONObject.parseObject(ids);
         String[] allId = json.getString("ids").split(",");
         logger.info("ids=" + json.getString("ids"));
         Integer[] aryIds = new Integer[allId.length];
-        for(int i=0;i<allId.length;i++){
+        for (int i = 0; i < allId.length; i++) {
             aryIds[i] = Integer.valueOf(allId[i]);
         }
 
-        sjr.deleteByIds(aryIds);
+        sjr.deleteByIds(aryIds);*/
+        //sjr.delete(content);
+        sjr.deleteInBatch(content);
 
         return new ModelAndView("/strategy/get_page");
     }
 
-    @RequestMapping(value = "/update", method = RequestMethod.POST)
+    /**
+     * 更新或添加,如果ID不存在则新增,存在则添加
+     *
+     * @param strategy
+     * @return 当前操作对象 {@link Strategy}
+     */
+    @RequestMapping(value = "/upsert", method = RequestMethod.POST)
     public Strategy update(@RequestBody Strategy strategy) {
         Strategy save = sjr.save(strategy);
         return save;
