@@ -3,6 +3,7 @@ package com.skspruce.ism.detect.spark.streaming
 import java.lang
 import java.util.Calendar
 
+import com.skspruce.ism.detect.spark.model.Sksdetect
 import com.skspruce.ism.detect.spark.util.BroadcastWrapper
 import com.skspruce.ism.detect.spark.utils._
 import org.apache.commons.cli.{CommandLine, GnuParser, HelpFormatter, Option, Options}

@@ -23,7 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
         <protobuf.version>3.3.1</protobuf.version>
-        <fastjson.version>1.2.23</fastjson.version>
+        <fastjson.version>1.2.38</fastjson.version>
         <elasticsearch.version>5.2.2</elasticsearch.version>
         <elasticsearch.client.transport.version>5.2.2</elasticsearch.client.transport.version>
         <kafka-client.version>0.11.0.0</kafka-client.version>
@@ -110,6 +110,11 @@
                 <groupId>org.apache.logging.log4j</groupId>
                 <artifactId>log4j-api</artifactId>
                 <version>${log4j-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.alibaba</groupId>
+                <artifactId>fastjson</artifactId>
+                <version>${fastjson.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

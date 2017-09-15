@@ -4,14 +4,17 @@ import com.skspruce.ism.detect.webapi.strategy.entity.Strategy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-public interface StrategyRepository extends JpaRepository<Strategy, Integer> {
+@Transactional
+public interface StrategyJpaRepository extends JpaRepository<Strategy, Integer>,CrudRepository<Strategy,Integer> {
 
     Strategy findStrategyById(Integer id);
 
     @Transactional
-    @Query(value = "delete from strategy where id in(?1)", nativeQuery = true)
+    @Query(nativeQuery = true, value = "DELETE FROM strategy where id in (:ids)")
     @Modifying
-    void deleteByIds(String ids);
+    void deleteByIds(@Param(value = "ids") Integer[] ids);
 }
