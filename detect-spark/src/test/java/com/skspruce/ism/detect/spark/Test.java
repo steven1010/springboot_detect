@@ -3,15 +3,13 @@ package com.skspruce.ism.detect.spark;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
-import com.skspruce.ism.detect.spark.utils.BytesUtil;
-import com.skspruce.ism.detect.spark.utils.CassandraUtil;
-import com.skspruce.ism.detect.spark.utils.ESUtil;
-import com.skspruce.ism.detect.spark.utils.KafkaUtil;
+import com.skspruce.ism.detect.spark.utils.*;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import java.nio.ByteBuffer;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -64,13 +62,15 @@ public class Test {
         Producer producer = KafkaUtil.getProducer();
 
         Cluster cluster = Cluster.builder().addContactPoints("192.168.20.155").build();
-        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 1000;").all();
+        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 10000;").all();
 
         //List<Row> data = CassandraUtil.queryToList("select day,time,ap_mac,content from ias.rtls_by_time limit 100;");
+        Random random = new Random();
 
-        do {
+        //int index = 0;
+        //do {
             for (Row next : data) {
-                Thread.sleep(100 * 1);
+                Thread.sleep(1 * 1);
                 System.out.println(next.getInt("day") + "\t" + next.getTimestamp("time").getTime() + "\t" + next.getLong("ap_mac"));
                 System.out.println(next.getBytes("content"));
                 ByteBuffer content = next.getBytes("content");
@@ -90,16 +90,26 @@ public class Test {
                 }
                 System.out.println("user_mac:" + BytesUtil.toHex(targetByte));
 
+                int index = random.nextInt(1000);
+                if (index < 400) {
+                    try (Connection conn = SQLHelper.getInstance().getDetectConnection()) {
+                        conn.prepareStatement("insert into strategy (name,mac,add_time) values ('test_"
+                                + random.nextInt(10000) + "','"
+                                + MacUtil.formatMac(BytesUtil.toHex(targetByte)) + "',"+System.currentTimeMillis()+")").execute();
+                    }
+                }
+
                 byte[] kafkaByte = new byte[content.capacity()];
                 content.flip();
                 content.get(kafkaByte, 0, content.limit());
                 for (int i = 0; i < 10; i++) {
-                    producer.send(new ProducerRecord("test" + (new Random().nextInt(2) + 1),
+                    producer.send(new ProducerRecord("test" + (random.nextInt(2) + 1),
                             "RTLS_" + BytesUtil.toHex(apByte) +
                                     "_" + BytesUtil.toHex(targetByte) +
                                     "_" + System.currentTimeMillis(), kafkaByte));
                 }
             }
-        } while (false);
+            //index++;
+        //} while (index < 100);
     }
 }

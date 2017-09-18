@@ -1,7 +1,7 @@
 package com.skspruce.ism.detect.webapi.strategy.controller;
 
 import com.skspruce.ism.detect.webapi.strategy.entity.Strategy;
-import com.skspruce.ism.detect.webapi.strategy.repo.StrategyRepository;
+import com.skspruce.ism.detect.webapi.strategy.repository.StrategyJpaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,10 +10,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import java.util.List;
 
 /**
  * 策略相关API controller
@@ -25,20 +25,36 @@ public class StrategyController {
     public static Logger logger = LoggerFactory.getLogger(StrategyController.class);
 
     @Autowired
-    StrategyRepository sr;
+    StrategyJpaRepository sjr;
 
     public static void main(String[] args) {
         SpringApplication.run(StrategyController.class, args);
     }
 
-    @RequestMapping("/find_id")
-    public Strategy findById(Integer id) {
-        Strategy strategy = sr.findStrategyById(id);
-        return strategy;
+    /**
+     * 根据ID查询
+     *
+     * @param strategy 封装JSON数据对象
+     * @return {@link Strategy}
+     */
+    @RequestMapping(value = "/find_id", method = RequestMethod.POST)
+    public Strategy findById(@RequestBody Strategy strategy) {
+        logger.info("id=" + strategy.getId());
+        Strategy res = sjr.findOne(strategy.getId());
+        return res;
     }
 
-    @RequestMapping("/get_page")
-    public Page<Strategy> findPage(@RequestParam(value = "page", defaultValue = "0") Integer page,
+    /**
+     * 分页查询策略
+     *
+     * @param number    当前页码
+     * @param size      每页显示数量
+     * @param sortField 排序字段
+     * @param sortType  排序类型
+     * @return {@code Page<Strategy>}
+     */
+    @RequestMapping(value = "/get_page", method = RequestMethod.GET)
+    public Page<Strategy> findPage(@RequestParam(value = "number", defaultValue = "0") Integer number,
                                    @RequestParam(value = "size", defaultValue = "5") Integer size,
                                    @RequestParam(value = "sortField", defaultValue = "id") String sortField,
                                    @RequestParam(value = "sortType", defaultValue = "desc") String sortType) {
@@ -49,15 +65,46 @@ public class StrategyController {
             sort = new Sort(Sort.Direction.ASC, sortField);
         }
 
-        Pageable pageable = new PageRequest(page, size, sort);
-        Page<Strategy> strategies = sr.findAll(pageable);
+        Pageable pageable = new PageRequest(number, size, sort);
+        Page<Strategy> strategies = sjr.findAll(pageable);
         return strategies;
     }
 
-    @RequestMapping("/delete")
-    public ModelAndView deleteByIds(String ids){
-        sr.deleteByIds(ids);
+    /**
+     * 删除策略,可批量删除,多个id以','分割
+     *
+     * @param content POST JSON {"ids":"1,2,3"}
+     * @return {@link ModelAndView}
+     */
+    @RequestMapping(value = "/delete", method = RequestMethod.POST)
+    public List<Strategy> delete(@RequestBody List<Strategy> content) {
+        /*JSONObject json = JSONObject.parseObject(ids);
+        String[] allId = json.getString("ids").split(",");
+        logger.info("ids=" + json.getString("ids"));
+        Integer[] aryIds = new Integer[allId.length];
+        for (int i = 0; i < allId.length; i++) {
+            aryIds[i] = Integer.valueOf(allId[i]);
+        }
 
-        return new ModelAndView("/strategy/get_page");
+        sjr.deleteByIds(aryIds);*/
+        //sjr.delete(content);
+        sjr.deleteInBatch(content);
+
+        return content;
+    }
+
+    /**
+     * 更新或添加,如果ID不存在则新增,存在则添加
+     *
+     * @param strategy
+     * @return 当前操作对象 {@link Strategy}
+     */
+    @RequestMapping(value = "/upsert", method = RequestMethod.POST)
+    public Strategy upsert(@RequestBody Strategy strategy) {
+        if (strategy.getId() == null || strategy.getId() == 0) {
+            strategy.setAddTime(System.currentTimeMillis());
+        }
+        Strategy save = sjr.save(strategy);
+        return save;
     }
 }
