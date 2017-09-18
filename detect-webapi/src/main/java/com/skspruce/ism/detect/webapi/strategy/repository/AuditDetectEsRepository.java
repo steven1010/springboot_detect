@@ -31,4 +31,13 @@ public class AuditDetectEsRepository extends ElasticSearchRepository {
 
         return  searchResponse;
     }
+
+    public SearchResponse findLastIdByUserMac(String userMac) {
+
+        SearchRequestBuilder queryBuilder = prepareSearch();
+        queryBuilder.setQuery(QueryBuilders.boolQuery().must(QueryBuilders.matchQuery("UserMacString",userMac))).setFrom(0).setSize(1).addSort("Time", SortOrder.DESC);
+        SearchResponse searchResponse = queryBuilder.get();
+
+        return  searchResponse;
+    }
 }

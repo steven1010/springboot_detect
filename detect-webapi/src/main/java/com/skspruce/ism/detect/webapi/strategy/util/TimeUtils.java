@@ -142,6 +142,24 @@ public class TimeUtils
         return new Timestamp(date.getTime());
     }
 
+    public static final Date string2Date(String format, String time)
+    {
+        if(format == null)
+            format = YYYY_MM_DD_FORMAT;
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat(format);
+//        simpleDateFormat.setTimeZone(TimeZone.getTimeZone(timeZoneStr));
+        Date date = null;
+        try
+        {
+            date = simpleDateFormat.parse(time);
+        }
+        catch(ParseException e)
+        {
+            return null;
+        }
+        return date;
+    }
+
     public static final Calendar string2Calendar(String format, String cal)
     {
         if(format == null)
@@ -301,6 +319,8 @@ public class TimeUtils
     public static final long DEFAULT_DATE = -5364691200000L;
     public static final String DEFAULTFORMAT = "yyyy-MM-dd HH:mm:ss";
 
+    public static final String MONGODBFORMAT = "yyyy-MM-dd'T'HH:mm:ss+08:00";
+
     
     public static String long2TimezoneStr(long time, String timeZoneStr, String farmat) {
     	SimpleDateFormat dateFormat = new SimpleDateFormat(farmat);  
@@ -315,5 +335,10 @@ public class TimeUtils
         dateFormat.setTimeZone(TimeZone.getTimeZone(timeZoneStr));  
         Date date = new Date(time);
         return dateFormat.format(date);
+    }
+
+
+    public static void main(String[] args) {
+       // System.out.println(string2Date(MONGODBFORMAT, "2017-08-28T15:50:26+08:00", "GMT+16"));
     }
 }

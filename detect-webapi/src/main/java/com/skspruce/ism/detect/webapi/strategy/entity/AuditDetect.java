@@ -12,7 +12,7 @@ public class AuditDetect implements Serializable {
 
     @Id
     private String _id;
-    private LocalDateTime Time;
+    private String Time;
     private String ApMacString;
     private String UserMacString;
     private long PlaceCode;
@@ -27,11 +27,11 @@ public class AuditDetect implements Serializable {
         ApMacString = apMacString;
     }
 
-    public LocalDateTime getTime() {
+    public String getTime() {
         return Time;
     }
 
-    public void setTime(LocalDateTime time) {
+    public void setTime(String time) {
         Time = time;
     }
 

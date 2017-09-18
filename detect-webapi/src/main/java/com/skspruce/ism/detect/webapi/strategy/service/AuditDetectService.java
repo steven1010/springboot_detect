@@ -54,13 +54,46 @@ public class AuditDetectService {
             logger.error("", e);
             responseMessage
                     .setStatus(RestConstants.ReturnResponseMessageFailed);
-            responseMessage.setMessage(new Message("查询轨迹失败!", "search track failed"));
+            responseMessage.setMessage(new Message("查询历史轨迹失败!", "search track failed"));
             modelMap.put(RestConstants.ReturnResponseMessage, responseMessage);
             return modelMap.toString();
         }
 
 
 
-        return "";
+        return modelMap.toString();
+    }
+
+    public String findLastAuditDetect(String userMac) {
+
+        JSONObject modelMap = new JSONObject();
+        ResponseMessage responseMessage = RestUtil.addResponseMessageForModelMap(modelMap);
+
+        try{
+            SearchResponse searchResponse = auditDetectEsRepository.findLastIdByUserMac(userMac);
+
+            SearchHits hits = searchResponse.getHits();
+
+            Set<String> ids = new HashSet<String>();
+            for(int i = 0; i< hits.getHits().length; i++) {
+                ids.add(hits.getAt(i).getId());
+            }
+            if(ids.size() > 0) {
+                List<AuditDetect> auditDetects = auditDetectRepository.findByIdIn(ids);
+
+                modelMap.put("data", auditDetects);
+            }
+        }catch (Exception e) {
+            logger.error("", e);
+            responseMessage
+                    .setStatus(RestConstants.ReturnResponseMessageFailed);
+            responseMessage.setMessage(new Message("查询实时追踪失败!", "search track failed"));
+            modelMap.put(RestConstants.ReturnResponseMessage, responseMessage);
+            return modelMap.toString();
+        }
+
+
+
+        return modelMap.toString();
     }
 }
