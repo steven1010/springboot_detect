@@ -9,6 +9,7 @@ public class StrategyEvent {
     private Integer strategyId;
     private String strategyName;
     private Integer status;
+    private String eventRecord;
 
     private Long endTime;
     private Long handleTime;
@@ -104,5 +105,13 @@ public class StrategyEvent {
 
     public void setStrategyName(String strategyName) {
         this.strategyName = strategyName;
+    }
+
+    public String getEventRecord() {
+        return eventRecord;
+    }
+
+    public void setEventRecord(String eventRecord) {
+        this.eventRecord = eventRecord;
     }
 }

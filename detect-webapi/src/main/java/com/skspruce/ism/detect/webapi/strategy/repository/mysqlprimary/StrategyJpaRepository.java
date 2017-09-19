@@ -1,6 +1,6 @@
-package com.skspruce.ism.detect.webapi.strategy.repository;
+package com.skspruce.ism.detect.webapi.strategy.repository.mysqlprimary;
 
-import com.skspruce.ism.detect.webapi.strategy.entity.Strategy;
+import com.skspruce.ism.detect.webapi.strategy.mysqlprimaryentity.Strategy;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

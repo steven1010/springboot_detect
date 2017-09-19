@@ -6,21 +6,21 @@ import java.io.Serializable;
  * 布控策略
  */
 public class Strategy implements Serializable {
-    private int id;
+    private Integer id;
     private String name;
     private String mac;
-    private int accountType;
+    private String accountType;
     private String accountId;
     private String areaIds;
-    private int reportType;
+    private Integer reportType;
     private String reportTarget;
-    private int reportLevel;
+    private Integer reportLevel;
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -40,11 +40,11 @@ public class Strategy implements Serializable {
         this.mac = mac;
     }
 
-    public int getAccountType() {
+    public String getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(int accountType) {
+    public void setAccountType(String accountType) {
         this.accountType = accountType;
     }
 
@@ -64,11 +64,11 @@ public class Strategy implements Serializable {
         this.areaIds = areaIds;
     }
 
-    public int getReportType() {
+    public Integer getReportType() {
         return reportType;
     }
 
-    public void setReportType(int reportType) {
+    public void setReportType(Integer reportType) {
         this.reportType = reportType;
     }
 
@@ -80,11 +80,11 @@ public class Strategy implements Serializable {
         this.reportTarget = reportTarget;
     }
 
-    public int getReportLevel() {
+    public Integer getReportLevel() {
         return reportLevel;
     }
 
-    public void setReportLevel(int reportLevel) {
+    public void setReportLevel(Integer reportLevel) {
         this.reportLevel = reportLevel;
     }
 }

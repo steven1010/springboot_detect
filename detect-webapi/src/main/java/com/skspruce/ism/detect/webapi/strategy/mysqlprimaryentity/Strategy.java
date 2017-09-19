@@ -1,9 +1,8 @@
-package com.skspruce.ism.detect.webapi.strategy.entity;
+package com.skspruce.ism.detect.webapi.strategy.mysqlprimaryentity;
 
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
-import java.sql.Timestamp;
 
 @Entity
 public class Strategy {
@@ -16,7 +15,7 @@ public class Strategy {
 
     private String mac;
 
-    private Integer accountType;
+    private String accountType;
 
     private String accountId;
 
@@ -30,10 +29,12 @@ public class Strategy {
 
     private Long addTime;
 
+    private String areaNames;
+
     public Strategy() {
     }
 
-    public Strategy(Integer id, String name, String mac, Integer accountType,
+    public Strategy(Integer id, String name, String mac, String accountType,
                     String accountId, String areaIds, Integer reportType,
                     String reportTarget, Integer reportLevel, Long addTime) {
         super();
@@ -73,11 +74,11 @@ public class Strategy {
         this.mac = mac;
     }
 
-    public Integer getAccountType() {
+    public String getAccountType() {
         return accountType;
     }
 
-    public void setAccountType(Integer accountType) {
+    public void setAccountType(String accountType) {
         this.accountType = accountType;
     }
 
@@ -127,5 +128,13 @@ public class Strategy {
 
     public void setAddTime(Long addTime) {
         this.addTime = addTime;
+    }
+
+    public String getAreaNames() {
+        return areaNames;
+    }
+
+    public void setAreaNames(String areaNames) {
+        this.areaNames = areaNames;
     }
 }
