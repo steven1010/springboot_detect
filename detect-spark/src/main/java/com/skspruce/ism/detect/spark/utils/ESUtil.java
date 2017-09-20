@@ -7,6 +7,9 @@ import org.elasticsearch.action.admin.indices.exists.types.TypesExistsRequest;
 import org.elasticsearch.action.admin.indices.exists.types.TypesExistsResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.delete.DeleteRequest;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
@@ -63,6 +66,10 @@ public class ESUtil {
         } catch (UnknownHostException e) {
             logger.error("connect elasticsearch error:", e);
         }
+    }
+
+    public static TransportClient getClient() {
+        return client;
     }
 
     /**
@@ -233,6 +240,32 @@ public class ESUtil {
             }
         } catch (Exception e) {
             logger.error("deleteIndex error,,params is index:{} type:{} id:{}", index, type, id, e);
+            flag = false;
+        }
+
+        return flag;
+    }
+
+    /**
+     * 根据ID批量删除
+     *
+     * @param index
+     * @param type
+     * @param ids
+     * @return
+     */
+    public static boolean deleteBatch(String index, String type, List<String> ids) {
+        boolean flag = true;
+        try {
+            BulkRequestBuilder builder = client.prepareBulk();
+            for (String id : ids) {
+                DeleteRequest delete = new DeleteRequest(index, type, id);
+                builder.add(delete);
+            }
+            BulkResponse response = builder.get();
+            flag = !response.hasFailures();
+        } catch (Exception e) {
+            logger.error("deleteIndex error,,params is index:{} type:{} ids:{}", index, type, ids, e);
             flag = false;
         }
 

@@ -3,7 +3,7 @@ package com.skspruce.ism.detect.spark.streaming
 import java.lang
 import java.util.Calendar
 
-import com.skspruce.ism.detect.spark.model.Sksdetect
+import com.skspruce.ism.detect.spark.model.Sksdetect.SKS_Detect_Phone_Info_Message
 import com.skspruce.ism.detect.spark.util.BroadcastWrapper
 import com.skspruce.ism.detect.spark.utils._
 import org.apache.commons.cli.{CommandLine, GnuParser, HelpFormatter, Option, Options}
@@ -16,6 +16,8 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{Partitioner, SparkConf, SparkContext}
 import org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder
 import org.slf4j.LoggerFactory
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * 布控人员预警实时处理
@@ -45,7 +47,8 @@ object DetectWarning {
     val bootstrapServers = cmd.getOptionValue("bootstrap-servers").trim
     val groupId = cmd.getOptionValue("group-id").trim
     val interval = cmd.getOptionValue("interval").trim
-    val topicList = cmd.getOptionValue("topics").trim
+    val rtlsTopic = cmd.getOptionValue("rtls-topic").trim
+    val gpbTopic = cmd.getOptionValue("gpb-topic").trim
     val maxRatePerPartition = cmd.getOptionValue("max-rate").trim
     val updateInteval = cmd.getOptionValue("update-interval").trim
     val apTimeOut = cmd.getOptionValue("ap-timeout").trim.toInt
@@ -61,7 +64,7 @@ object DetectWarning {
     init(keySpace, table, esIndex, esType)
 
     def createContext(): StreamingContext = {
-      createSparkStreamingContext(appName, bootstrapServers, groupId, interval, topicList,
+      createSparkStreamingContext(appName, bootstrapServers, groupId, interval, rtlsTopic, gpbTopic,
         maxRatePerPartition, updateInteval, apTimeOut, keySpace, table, esIndex, esType, checkpointPath)
     }
 
@@ -79,7 +82,8 @@ object DetectWarning {
     * @param bootstrapServers    kafka bootstrap-servers
     * @param groupId             kafka groupId
     * @param interval            batch 间隔时间,单位:秒
-    * @param topicList           获取数据的topick列表,以','分割
+    * @param rtlsTopic           获取数据的rtls类型topick列表,以','分割
+    * @param gpbTopic            获取数据的gpb类型topick列表,以','分割
     * @param maxRatePerPartition 每个topic的每个partition每秒消费消息数量限制
     * @param updateInteval       mysql数据更新时间间隔,单位:分钟
     * @param apTimeOut           用户与AP超时时间间隔,单位:分钟
@@ -91,7 +95,7 @@ object DetectWarning {
     * @return StreamingContext
     */
   def createSparkStreamingContext(appName: String, bootstrapServers: String, groupId: String, interval: String,
-                                  topicList: String, maxRatePerPartition: String, updateInteval: String, apTimeOut: Int,
+                                  rtlsTopic: String, gpbTopic: String, maxRatePerPartition: String, updateInteval: String, apTimeOut: Int,
                                   keySpace: String, table: String, esIndex: String, esType: String,
                                   checkpointPath: String): StreamingContext = {
     //设置spark参数
@@ -116,7 +120,7 @@ object DetectWarning {
 
     //输出当前运行参数
     println(s"input params:appName:$appName \t bootstrapServers:$bootstrapServers \t " +
-      s"groupId:$groupId \t interval:$interval \t topicList:$topicList \t maxRatePerPartition:$maxRatePerPartition \t " +
+      s"groupId:$groupId \t interval:$interval \t topicList:$rtlsTopic \t maxRatePerPartition:$maxRatePerPartition \t " +
       s"updateInterval:$updateInteval \t numExecutors:$partition \t " +
       s"updateInteval:$updateInteval minute \t apTimeOut:$apTimeOut")
 
@@ -130,40 +134,50 @@ object DetectWarning {
       "enable.auto.commit" -> (true: lang.Boolean)
     )
     //topic sets
-    val topics = topicList.split(",")
+    val rtlsTopics = rtlsTopic.split(",")
+    val gpbTopics = gpbTopic.split(",")
 
     //create direct stream
-    val stream = KafkaUtils.createDirectStream[String, Array[Byte]](
+    val rtlsStream = KafkaUtils.createDirectStream[String, Array[Byte]](
       ssc,
       PreferConsistent,
-      Subscribe[String, Array[Byte]](topics, kafkaParams)
+      Subscribe[String, Array[Byte]](rtlsTopics, kafkaParams)
     )
 
-    stream.foreachRDD(rdd => {
+    val gpbStream = KafkaUtils.createDirectStream[String, Array[Byte]](
+      ssc,
+      PreferConsistent,
+      Subscribe[String, Array[Byte]](gpbTopics, kafkaParams)
+    )
+
+    //将不同数据类型转换为相同格式数据
+    val rtlsData = rtlsStream.map(t => parseRtlsData(t.value(), t.key().split("_")(2).toLong))
+      .flatMap(_.split(",")).map(s => {
+      val info = s.split("_")
+      //(userMac,apMac,logTime)
+      (MacUtil.formatMac(info(0)), MacUtil.formatMac(info(1)), info(2).toLong)
+    })
+
+    val gpbData = gpbStream.map(t => parseGpbData(t.value(), t.key().split("_")(3).toLong))
+
+    val allStream = rtlsData.union(gpbData)
+
+    //处理数据
+    allStream.foreachRDD(rdd => {
       //更新共享数据,此处相关mysql操作会对kafka offsets commit有影响,比较奇葩......
       updateData(rdd.sparkContext, updateInteval.toInt)
       //获取共享数据
       val strategyData = BroadcastWrapper.getStrategyInstance(rdd.sparkContext).value
       val apAreaData = BroadcastWrapper.getApAreaInstance(rdd.sparkContext).value
-      //strategyData.foreach(println(_))
-      //解析数据
-      rdd.map(record => {
-        val keys = record.key().split("_")
-        val time = keys(3)
-        val apMac = keys(1).toUpperCase
-        val data = record.value()
-        val userMacBytes = data.slice(28, 34)
-        val userMac = BytesUtil.toHex(userMacBytes).toUpperCase
-        //返回三元元组 (userMac , apMac , logTime)
-        (MacUtil.formatMac(userMac), MacUtil.formatMac(apMac), time)
-      }).filter(t => strategyData.contains(t._1)) //过虑数据
+
+      rdd.filter(t => strategyData.contains(t._1)) //过虑数据
         .map(t => {
         //获取数据详情,区域ID与区域名称
         val apAreaInfo = apAreaData.get(t._2).getOrElse((0, "cannot confirm area info"))
         //获取策略信息
         val strategyInfo = strategyData.get(t._1).get
         //返回二元元组(userMac+"_"+areaId+"_"+streateId+"_"+areaName , logTime)
-        (t._1 + "_" + apAreaInfo._1 + "_" + strategyInfo.getId + "_" + apAreaInfo._2, t._3.toLong)
+        (t._1 + "_" + apAreaInfo._1 + "_" + strategyInfo.getId + "_" + apAreaInfo._2, t._3)
       }).repartitionAndSortWithinPartitions(
         //自定义分区,相同key数据进入同一partition
         new Partitioner {
@@ -175,7 +189,7 @@ object DetectWarning {
         }).foreachPartition(iter => {
         //将数据分组聚合
         val result = iter.toStream.groupBy(t => t._1)
-        result.foreach(f = t => {
+        result.foreach(t => {
           val minTime = t._2.minBy(x => x._2)
           val maxTime = t._2.maxBy(x => x._2)
           val keys = t._1.split("_")
@@ -194,7 +208,7 @@ object DetectWarning {
             }
           }
 
-          //println(s"${t._1} \t maxTime:${maxTime._2} \t minTime:${minTime._2}")
+          println(s"${t._1} \t maxTime:${maxTime._2} \t minTime:${minTime._2}")
         })
       })
     })
@@ -223,7 +237,8 @@ object DetectWarning {
     options.addOption("i", "interval", true, "interval time (seconds)")
     options.addOption("b", "bootstrap-servers", true, "kafka broker list")
     options.addOption("g", "group-id", true, "kafka group id")
-    options.addOption("t", "topics", true, "topic name list")
+    options.addOption("r", "rtls-topic", true, "the topic list of rtls")
+    options.addOption("p", "gpb-topic", true, "the topic list of gpb")
     options.addOption("m", "max-rate", true, "maxRatePerPartition or messages per second for each partiton")
     options.addOption("u", "update-interval", true, "the interval of update data,unit of minute")
     options.addOption("o", "ap-timeout", true, "time out of ap heart,unit of minute")
@@ -339,6 +354,7 @@ object DetectWarning {
       begin_time bigint,
       end_time bigint,
       handle_time bigint,
+      event_record text,
       PRIMARY KEY (mas, begin_time)
     ) WITH CLUSTERING ORDER BY (begin_time DESC);"""
 
@@ -355,5 +371,51 @@ object DetectWarning {
     } else if (!ESUtil.isTypeExists(esIndex, esType)) {
       ESUtil.createMapping(esIndex, esType, ESUtil.getMapping)
     }
+  }
+
+  /**
+    * 解析RTLS类型数据
+    *
+    * @param data
+    * @param logTime
+    * @return
+    */
+  def parseRtlsData(data: Array[Byte], logTime: Long): String = {
+    val rtlsHead = 16
+    val rtlsTail = 20
+    val rtlsBody = 28
+    val apPosition = 8
+    val userMacPosition = 12
+    val macLength = 6
+    val info = ArrayBuffer[String]()
+
+    val length = data.length
+    val count = (length - rtlsHead - rtlsTail) / rtlsBody
+    val apBytes = data.slice(apPosition, apPosition + macLength)
+    println("length:" + length + "\tcount:" + count + "\tapMac" + BytesUtil.toHex(apBytes))
+    for (i <- 0 to count) {
+      val userMacBytes = data.slice(rtlsHead + i * rtlsBody + userMacPosition, rtlsHead + i * rtlsBody + userMacPosition + macLength)
+      info += BytesUtil.toHex(userMacBytes).toUpperCase + "_" + BytesUtil.toHex(apBytes).toUpperCase + "_" + logTime
+    }
+
+    print(info.toArray.mkString(","))
+    info.toArray.mkString(",")
+  }
+
+  /**
+    * 解析GPB类型数据
+    *
+    * @param data
+    * @param logTime
+    * @return 三元元组(userMac,apMac,logTime)
+    */
+  def parseGpbData(data: Array[Byte], logTime: Long): Tuple3[String, String, Long] = {
+    val dpim = SKS_Detect_Phone_Info_Message.parseFrom(data)
+    val apMac = dpim.getApMac
+    val userMac = dpim.getPhoneMac
+
+    println(s"apMac:$apMac\tuserMac:$userMac")
+
+    (MacUtil.formatMac(userMac.toUpperCase()), MacUtil.formatMac(apMac.toUpperCase()), logTime)
   }
 }

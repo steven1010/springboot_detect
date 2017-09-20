@@ -3,11 +3,14 @@ package com.skspruce.ism.detect.spark;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
+import com.google.protobuf.ByteString;
+import com.skspruce.ism.detect.spark.model.Sksdetect;
 import com.skspruce.ism.detect.spark.utils.*;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -20,8 +23,10 @@ public class Test {
     public static void main(String[] args) throws Exception {
         //ESUtil.createMapping("monitor_index", "monitor_detect", ESUtil.getMapping());
         //insert2ES();
-        //ESUtil.getIndex("monitor_index","monitor_detect","AV5ggGXTrFqvLzbCEtVU");
+
         sendData();
+        sendGpb();
+        //insertMysql();
         //CassandraUtil.createKeySpace("test","SimpleStrategy","2");
         //Row row = CassandraUtil.queryToOne("select * from test.monitor_result where mas='test'");
         //System.out.println(row.getLong("begin_time"));
@@ -62,15 +67,15 @@ public class Test {
         Producer producer = KafkaUtil.getProducer();
 
         Cluster cluster = Cluster.builder().addContactPoints("192.168.20.155").build();
-        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 10000;").all();
+        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 100;").all();
 
         //List<Row> data = CassandraUtil.queryToList("select day,time,ap_mac,content from ias.rtls_by_time limit 100;");
         Random random = new Random();
 
-        //int index = 0;
-        //do {
+        int index = 0;
+        do {
             for (Row next : data) {
-                Thread.sleep(1 * 1);
+                //Thread.sleep(1 * 1);
                 System.out.println(next.getInt("day") + "\t" + next.getTimestamp("time").getTime() + "\t" + next.getLong("ap_mac"));
                 System.out.println(next.getBytes("content"));
                 ByteBuffer content = next.getBytes("content");
@@ -90,26 +95,118 @@ public class Test {
                 }
                 System.out.println("user_mac:" + BytesUtil.toHex(targetByte));
 
-                int index = random.nextInt(1000);
-                if (index < 400) {
-                    try (Connection conn = SQLHelper.getInstance().getDetectConnection()) {
-                        conn.prepareStatement("insert into strategy (name,mac,add_time) values ('test_"
-                                + random.nextInt(10000) + "','"
-                                + MacUtil.formatMac(BytesUtil.toHex(targetByte)) + "',"+System.currentTimeMillis()+")").execute();
-                    }
-                }
-
                 byte[] kafkaByte = new byte[content.capacity()];
                 content.flip();
                 content.get(kafkaByte, 0, content.limit());
                 for (int i = 0; i < 10; i++) {
-                    producer.send(new ProducerRecord("test" + (random.nextInt(2) + 1),
+                    producer.send(new ProducerRecord("rtls_test",
                             "RTLS_" + BytesUtil.toHex(apByte) +
                                     "_" + BytesUtil.toHex(targetByte) +
                                     "_" + System.currentTimeMillis(), kafkaByte));
                 }
             }
-            //index++;
-        //} while (index < 100);
+            index++;
+        } while (index < 1);
+    }
+
+    public static void insertMysql() throws Exception {
+        Producer producer = KafkaUtil.getProducer();
+
+        Cluster cluster = Cluster.builder().addContactPoints("192.168.20.155").build();
+        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 1000;").all();
+        Random random = new Random();
+
+        for (Row next : data) {
+            //Thread.sleep(1 * 1);
+            System.out.println(next.getInt("day") + "\t" + next.getTimestamp("time").getTime() + "\t" + next.getLong("ap_mac"));
+            System.out.println(next.getBytes("content"));
+            ByteBuffer content = next.getBytes("content");
+            byte[] apByte = new byte[6];
+            content.position(8);
+            content.get(apByte, 0, 6);
+            for (byte b : apByte) {
+                System.out.println(b);
+            }
+            System.out.println("ap_mac:" + BytesUtil.toHex(apByte));
+
+            byte[] targetByte = new byte[6];
+            content.position(28);
+            content.get(targetByte, 0, 6);
+            for (byte b : targetByte) {
+                System.out.println(b);
+            }
+            System.out.println("user_mac:" + BytesUtil.toHex(targetByte));
+
+            int index = random.nextInt(1000);
+            if (index < 400) {
+                try (Connection conn = SQLHelper.getInstance().getDetectConnection()) {
+                    conn.prepareStatement("insert into strategy (name,mac,add_time) values ('test_"
+                            + random.nextInt(10000) + "','"
+                            + MacUtil.formatMac(BytesUtil.toHex(targetByte)) + "'," + System.currentTimeMillis() + ")").execute();
+                }
+            }
+
+            byte[] kafkaByte = new byte[content.capacity()];
+            content.flip();
+            content.get(kafkaByte, 0, content.limit());
+            for (int i = 0; i < 1; i++) {
+                producer.send(new ProducerRecord("test" + (random.nextInt(2) + 1),
+                        "RTLS_" + BytesUtil.toHex(apByte) +
+                                "_" + BytesUtil.toHex(targetByte) +
+                                "_" + System.currentTimeMillis(), kafkaByte));
+            }
+        }
+    }
+
+    public static void sendGpb() throws Exception {
+        Producer producer = KafkaUtil.getProducer();
+
+        Cluster cluster = Cluster.builder().addContactPoints("192.168.20.155").build();
+        List<Row> data = cluster.connect().execute("select day,time,ap_mac,content from ias.rtls_by_time limit 100;").all();
+        Random random = new Random();
+
+        for (Row next : data) {
+            //Thread.sleep(1 * 1);
+            System.out.println(next.getInt("day") + "\t" + next.getTimestamp("time").getTime() + "\t" + next.getLong("ap_mac"));
+            System.out.println(next.getBytes("content"));
+            ByteBuffer content = next.getBytes("content");
+            byte[] apByte = new byte[6];
+            content.position(8);
+            content.get(apByte, 0, 6);
+            for (byte b : apByte) {
+                System.out.println(b);
+            }
+            System.out.println("ap_mac:" + BytesUtil.toHex(apByte));
+
+            byte[] targetByte = new byte[6];
+            content.position(28);
+            content.get(targetByte, 0, 6);
+            for (byte b : targetByte) {
+                System.out.println(b);
+            }
+            System.out.println("user_mac:" + BytesUtil.toHex(targetByte));
+
+            byte[] kafkaByte = new byte[content.capacity()];
+            content.flip();
+            content.get(kafkaByte, 0, content.limit());
+
+            Sksdetect.SKS_Detect_Phone_Info_Message.Builder dpimBuilder = Sksdetect.SKS_Detect_Phone_Info_Message.newBuilder();
+            dpimBuilder.setApMac(BytesUtil.toHex(apByte));
+            dpimBuilder.setApMacBytes(ByteString.copyFromUtf8(BytesUtil.toHex(apByte)));
+            dpimBuilder.setPhoneMac(BytesUtil.toHex(targetByte));
+            dpimBuilder.setPhoneMacBytes(ByteString.copyFromUtf8(BytesUtil.toHex(targetByte)));
+            dpimBuilder.setTime((int) System.currentTimeMillis() / 1000);
+            Sksdetect.SKS_Detect_Phone_Info_Message dpim = dpimBuilder.build();
+
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            dpim.writeTo(output);
+
+            for (int i = 0; i < 1; i++) {
+                producer.send(new ProducerRecord("gpb_test",
+                        "GPB_" + BytesUtil.toHex(apByte) +
+                                "_" + BytesUtil.toHex(targetByte) +
+                                "_" + System.currentTimeMillis(), output.toByteArray()));
+            }
+        }
     }
 }

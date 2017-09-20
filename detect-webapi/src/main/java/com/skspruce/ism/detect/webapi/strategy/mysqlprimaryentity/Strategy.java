@@ -1,20 +1,54 @@
-package com.skspruce.ism.detect.spark.model;
+package com.skspruce.ism.detect.webapi.strategy.mysqlprimaryentity;
 
-import java.io.Serializable;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
-/**
- * 布控策略
- */
-public class Strategy implements Serializable {
+@Entity
+public class Strategy {
+
+    @Id
+    @GeneratedValue
     private Integer id;
+
     private String name;
+
     private String mac;
+
     private String accountType;
+
     private String accountId;
+
     private String areaIds;
+
     private Integer reportType;
+
     private String reportTarget;
+
     private Integer reportLevel;
+
+    private Long addTime;
+
+    private String areaNames;
+
+    public Strategy() {
+    }
+
+    public Strategy(Integer id, String name, String mac, String accountType,
+                    String accountId, String areaIds, Integer reportType,
+                    String reportTarget, Integer reportLevel, Long addTime) {
+        super();
+        this.id = id;
+        this.name = name;
+        this.mac = mac;
+        this.accountType = accountType;
+        this.accountId = accountId;
+        this.areaIds = areaIds;
+        this.reportType = reportType;
+        this.reportTarget = reportTarget;
+        this.reportLevel = reportLevel;
+        this.addTime = addTime;
+    }
 
     public Integer getId() {
         return id;
@@ -86,5 +120,21 @@ public class Strategy implements Serializable {
 
     public void setReportLevel(Integer reportLevel) {
         this.reportLevel = reportLevel;
+    }
+
+    public Long getAddTime() {
+        return addTime;
+    }
+
+    public void setAddTime(Long addTime) {
+        this.addTime = addTime;
+    }
+
+    public String getAreaNames() {
+        return areaNames;
+    }
+
+    public void setAreaNames(String areaNames) {
+        this.areaNames = areaNames;
     }
 }
