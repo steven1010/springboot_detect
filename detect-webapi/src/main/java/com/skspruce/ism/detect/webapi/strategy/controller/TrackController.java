@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * 用户和虚拟账号轨迹查询 Controller
+ */
 @RestController
 @RequestMapping("/track")
 public class TrackController {
@@ -32,8 +35,8 @@ public class TrackController {
     }
 
     @RequestMapping(value = "/getVirtualTrackByMac", method = RequestMethod.GET)
-    public String getVirtualTrackByMac(@RequestParam String account, @RequestParam String beginTime, @RequestParam String endTime) {
-        return auditVirtualIdentityService.findAuditDetect(account, beginTime, endTime);
+    public String getVirtualTrackByMac(@RequestParam Integer type, @RequestParam String account, @RequestParam String beginTime, @RequestParam String endTime) {
+        return auditVirtualIdentityService.findAuditDetect(account, type, beginTime, endTime);
     }
 
     @RequestMapping(value = "/getLastVirtualTrackByMac", method = RequestMethod.GET)
